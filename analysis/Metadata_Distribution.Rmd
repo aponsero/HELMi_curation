@@ -1,10 +1,10 @@
 ---
 title: "HELMi metaData distribution"
 output:
-  pdf_document: default
-  html_notebook: default
   html_document:
     df_print: paged
+  html_notebook: default
+  pdf_document: default
 ---
 
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
@@ -15,6 +15,7 @@ library("ggridges")
 
 # Load the spreadsheets
 Voc <- read_excel("../questionnaire_vocabulary.xlsx")
+
 Q1 <- read_csv("../normalized_versions/corrected_translated/Q1_norm_background_04.10.18.csv") %>% 
   add_column(questionnaire="A_background")
 
@@ -56,9 +57,7 @@ This documents aims to provide an overview on the HELMi contextual dataset extra
 
 The following aspects are considered: 
 
-- Types and sparcity of the contextual dataset
-
-- Family compliance
+- Distributions and outliers 
 
 # Dataset description:
 
@@ -69,3 +68,190 @@ The following aspects are considered:
 - F1_NutritionMotorDev_year1_version1 or F1_NutritionMotorDev_year1_version2
  
 - F2_NutritionMotorDev_year2_version1 or F2_NutritionMotorDev_year2_version2
+
+**infants frequency questionnaires:**
+
+- E_Previous3Months
+ 
+- C_4to6months
+ 
+- D_7to12months
+ 
+- B_0to3months
+
+**parents questionnaires:**
+
+- G_ParentF_FoodFrequency
+ 
+- G_ParentM_FoodFrequency
+ 
+- G_MotherDepression
+ 
+- G_MotherStress (in progress)
+
+**Other questionnaires:**
+
+- H_HouseCollection
+
+\pagebreak 
+
+# A_background
+
+## Boolean fields
+
+```{r, echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="A_background")
+
+# Looking at boolean fields
+bool_fields <- curr_Voc %>% filter(data_type=="bool") %>% pull(variable_short_name)
+curr_bool <- Q1 %>% select(familly_ID, all_of(bool_fields))
+curr_bool_long <- curr_bool %>% pivot_longer(!familly_ID, names_to="question", values_to="answers")
+curr_bool_counts <- curr_bool_long %>% group_by(question, answers) %>% tally()
+
+plotbools <- curr_bool_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotbools
+
+```
+
+## Categorical fields
+
+***Note: The field "m_PregnancyDurationW+D" is not plotted here, the converted field is available in the nummerical fields.***
+
+
+```{r,  echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="A_background")
+
+# Looking at boolean fields
+cat_fields <- curr_Voc %>% filter(data_type=="categorical") %>% filter(variable_short_name!="m_PregnancyDurationW+D") %>%
+  pull(variable_short_name)
+curr_cat <- Q1 %>% select(familly_ID, all_of(cat_fields)) %>% mutate_all(as.character)
+curr_cat_long <- curr_cat %>% pivot_longer(!familly_ID, names_to="question", values_to="answers") 
+curr_cat_counts <- curr_cat_long %>% group_by(question, answers) %>% tally() 
+
+
+# categories from 1 to 10
+plotcat <- curr_cat_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotcat
+
+
+```
+## Numerical fields
+
+```{r,  warning=FALSE, echo=FALSE, message=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="A_background")
+
+# Looking at int fields
+int_fields <- curr_Voc %>% filter(data_type=="int") %>% 
+  filter(variable_short_name != "inf_AgeDays") %>%
+  filter(variable_short_name != "inf_AgeWeeks") %>%
+  filter(variable_short_name != "env_PostalCode") %>%
+  filter(variable_short_name != "env_PrevResidencePostalCode") %>%
+  filter(usability!="EMPTY") %>%
+  pull(variable_short_name)
+
+curr_int <- Q1 %>% select(all_of(int_fields))
+
+ggplot(gather(curr_int), aes(value)) + 
+    geom_histogram() + 
+    facet_wrap(~key, scales = 'free')
+
+# checking type of data
+type_check <-  curr_int %>% 
+    dplyr::summarise_all(class) %>% 
+    tidyr::gather(variable, class)
+
+
+```
+
+\pagebreak 
+
+############################################################################################################
+############################################################################################################
+
+# F1_NutritionMotorDev_year1_version1
+
+## Boolean fields
+
+```{r, echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version1")
+
+# Looking at boolean fields
+bool_fields <- curr_Voc %>% filter(data_type=="bool") %>% pull(variable_short_name)
+curr_bool <- Q5y1B %>% select(familly_ID, all_of(bool_fields))
+curr_bool_long <- curr_bool %>% pivot_longer(!familly_ID, names_to="question", values_to="answers")
+curr_bool_counts <- curr_bool_long %>% group_by(question, answers) %>% tally()
+
+plotbools <- curr_bool_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotbools
+
+```
+
+## Categorical fields
+
+*** Note: inf_PeriodFormula is not ploted here. The field needs to be corrected into a start and an end for the period***
+
+```{r,  echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version1")
+
+# Looking at boolean fields
+cat_fields <- curr_Voc %>% filter(data_type=="categorical") %>% filter(variable_short_name!="inf_PeriodFormula") %>%
+  pull(variable_short_name)
+curr_cat <- Q5y1B %>% select(familly_ID, all_of(cat_fields)) %>% mutate_all(as.character)
+curr_cat_long <- curr_cat %>% pivot_longer(!familly_ID, names_to="question", values_to="answers") 
+curr_cat_counts <- curr_cat_long %>% group_by(question, answers) %>% tally() 
+
+
+# categories from 1 to 10
+plotcat <- curr_cat_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotcat
+
+
+```
+## Numerical fields
+
+```{r,  warning=FALSE, echo=FALSE, message=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version1")
+
+# Looking at int fields
+int_fields <- curr_Voc %>% filter(data_type=="int") %>% 
+  filter(variable_short_name != "inf_Age") %>%
+  filter(variable_short_name != "inf_AgeDays") %>%
+  filter(variable_short_name != "inf_AgeWeeks") %>%
+  filter(usability!="EMPTY") %>%
+  pull(variable_short_name)
+
+curr_int <- Q5y1B %>% select(all_of(int_fields)) %>% 
+  mutate_if(is.character,as.numeric)
+
+
+ggplot(gather(curr_int), aes(value)) + 
+    geom_histogram() + 
+    facet_wrap(~key, scales = 'free')
+
+# checking type of data
+type_check <-  curr_int %>% 
+    dplyr::summarise_all(class) %>% 
+    tidyr::gather(variable, class)
+
+
+```

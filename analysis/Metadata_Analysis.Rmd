@@ -303,11 +303,12 @@ overview per familly: Famillies answering all the regular questionnaires
 # looking at the number of families filling the regular questionnaires
 
 all_fam_wide <- all_fam %>% pivot_wider(names_from=questionnaire, values_from=nb_filled) %>% replace(is.na(.), 0) %>%
-  mutate(F1_NutritionMotor_year1=F1_NutritionMotorDev_year1_Version2+F1_NutritionMotorDev_year1_Version1)%>%
-  mutate(F1_NutritionMotor_year2=F2_NutritionMotorDev_year2_Version2+F2_NutritionMotorDev_year2_Version1)
+  mutate(F1_NutritionMotorDev_year1=F1_NutritionMotorDev_year1_Version2+F1_NutritionMotorDev_year1_Version1)%>%
+  mutate(F1_NutritionMotorDev_year2=F2_NutritionMotorDev_year2_Version2+F2_NutritionMotorDev_year2_Version1) %>%
+  select(-F1_NutritionMotorDev_year1_Version2, -F1_NutritionMotorDev_year1_Version1, - F2_NutritionMotorDev_year2_Version2, - F2_NutritionMotorDev_year2_Version1)
 
 #infants questionnaires (background, Nutrition/Motor year 1 and 2)
-all_fam_wide <- all_fam_wide %>% mutate(all_inf=A_background+F1_NutritionMotor_year1+F1_NutritionMotor_year2)
+all_fam_wide <- all_fam_wide %>% mutate(all_inf=A_background+F1_NutritionMotorDev_year1+F1_NutritionMotorDev_year2)
 
 #infants frequency questionnaires: (E_Previous3Months, C_4to6months, D_7to12months, B_0to3months)
 all_fam_wide <- all_fam_wide %>% mutate(all_reg=E_Previous3Months+C_4to6months+

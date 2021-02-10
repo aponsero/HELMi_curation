@@ -8,14 +8,24 @@ library("eeptools")
 library("lubridate")
 
 # Load the spreadsheets and add columns
-Q1 <- read_excel("Q1_norm_background_04.10.18.xlsx") 
+Q1 <- read_excel("../normalized_versions/translated/Q1_norm_background_04.10.18.xlsx") 
 ## add age in days and weeks
 Q1_corr <- Q1 %>% mutate(inf_AgeDays=0) %>% 
-  mutate(inf_AgeWeeks=floor(inf_AgeDays/7)) %>% mutate(inf_Age="birth")
+  mutate(inf_AgeWeeks=floor(inf_AgeDays/7)) %>% 
+  mutate(inf_Age="birth") %>%
+  relocate(inf_AgeDays, .after = inf_Age) %>% 
+  relocate(inf_AgeWeeks, .after = inf_AgeDays)
 ## corrects dates
 Q1_corr <- Q1_corr %>% mutate(q_ResponseDate = as.Date(q_ResponseDate, format = "%d.%m.%Y")) %>%
   mutate(inf_DOB = as.Date(inf_DOB, format = "%d.%m.%Y")) %>% 
   mutate(inf_DueDate = as.Date(inf_DueDate, format = "%d.%m.%Y"))
+## Correct Pregnancy duration
+Q1_corr <- Q1_corr %>% separate('m_PregnancyDurationW+D', into = c("weeksPreg", "DaysPreg"), sep="\\+", 
+                                remove=FALSE) %>% 
+  mutate(DaysPreg = replace_na(DaysPreg, 0)) %>%
+  mutate(m_PregnancyDurationD=(as.numeric(weeksPreg)*7)+as.numeric(DaysPreg)) %>% 
+  select(-weeksPreg, -DaysPreg) %>%
+  relocate(m_PregnancyDurationD, .after = 'm_PregnancyDurationW+D')
 ## correct the Postal code
 Q1_corr <- Q1_corr %>% mutate(env_PostalCode=str_pad(env_PostalCode, 5, pad = "0")) %>%
   mutate(env_PrevResidencePostalCode=str_pad(env_PrevResidencePostalCode, 5, pad = "0"))
@@ -24,7 +34,7 @@ Q1_dup_fam <- Q1_corr %>% select(familly_ID) %>% group_by(familly_ID) %>%
   tally() %>% ungroup() %>% filter(n>1)
 Q1_dup <- left_join(Q1_dup_fam, Q1_corr)
 ## export as csv
-write_csv(Q1_corr, "Q1_norm_background_04.10.18.csv")
+write_csv(Q1_corr, "../normalized_versions/corrected_translated/Q1_norm_background_04.10.18.csv")
 
 
 Q2 <- read_excel("Q2_norm_Previous3months_15.08.20.xlsx") 
