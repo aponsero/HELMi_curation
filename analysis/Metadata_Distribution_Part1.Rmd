@@ -1,0 +1,494 @@
+---
+title: "HELMi metaData distribution infant quesionnaires"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+# libraries
+library("readxl")
+library("tidyverse")
+library("ggridges")
+
+# Load the spreadsheets
+Voc <- read_excel("../questionnaire_vocabulary.xlsx")
+
+Q1_max<-1055
+Q1 <- read_csv("../normalized_versions/corrected_translated/Q1_norm_background_04.10.18.csv", guess_max=Q1_max) %>% 
+  add_column(questionnaire="A_background")
+
+Q2_max<-7242
+Q2 <- read_csv("../normalized_versions/corrected_translated/Q2_norm_Previous3months_15.08.20.csv", guess_max=Q2_max) %>% 
+  add_column(questionnaire="E_Previous3Months")
+
+Q3_max<-6653
+Q3 <- read_csv("../normalized_versions/corrected_translated/Q3_norm_4to6months_26.01.20.csv", guess_max=Q3_max) %>% 
+  add_column(questionnaire="C_4to6months")
+
+Q4_max<-5600
+Q4 <- read_csv("../normalized_versions/corrected_translated/Q4_norm_7to12months_27.01.21.csv", guess_max=Q4_max) %>% 
+  add_column(questionnaire="D_7to12months")
+
+Q5y1_max<-431
+Q5y2_max<-901
+Q5y1B_max<-532
+Q5y2B_max<-6
+Q5y1 <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_v2_yearI_28.01.21.csv", guess_max=Q5y1_max) %>% 
+  add_column(questionnaire="F1_NutritionMotorDev_year1_Version2")
+Q5y2 <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_v2_yearII_28.01.21.csv", guess_max=Q5y2_max) %>% 
+  add_column(questionnaire="F2_NutritionMotorDev_year2_Version2")
+Q5y1B <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_yearI_27.01.21.csv", guess_max=Q5y1B_max) %>%
+  add_column(questionnaire="F1_NutritionMotorDev_year1_Version1")
+Q5y2B <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_yearII_28.01.21.csv", guess_max=Q5y2B_max) %>% 
+  add_column(questionnaire="F2_NutritionMotorDev_year2_Version1")
+
+Q6F_max<-1018
+Q6M_max<-1357
+Q6F <- read_csv("../normalized_versions/corrected_translated/Q6_norm_ParentsF_FoodFrequency_28.01.21.csv", guess_max=Q6F_max) %>% 
+  add_column(questionnaire="G_ParentF_FoodFrequency")
+Q6M <- read_csv("../normalized_versions/corrected_translated/Q6_norm_ParentsM_FoodFrequency_28.01.21.csv", guess_max=Q6M_max) %>% 
+  add_column(questionnaire="G_ParentM_FoodFrequency")
+
+Q7_max<-683
+Q7 <- read_csv("../normalized_versions/corrected_translated/Q7_norm_depression_unkown.csv", guess_max=Q7_max) %>% 
+  add_column(questionnaire="G_MotherDepression")
+
+Q8_max<-268
+Q8 <- read_csv("../normalized_versions/corrected_translated/Q8_norm_HouseDustCollection_28.01.21.csv", guess_max=Q8_max) %>% 
+  add_column(questionnaire="H_HouseCollection")
+
+Q9_max<-16953
+Q9 <- read_csv("../normalized_versions/corrected_translated/Q9_norm_0to3 months_02.02.2020.csv", guess_max=Q9_max) %>% 
+  add_column(questionnaire="B_0to3months")
+
+Q10y0_max<-1076
+Q10y2_max<-689
+Q10y0 <- read_csv("../normalized_versions/corrected_translated/Q10_norm_MotherStress_Year0_02.09.21.csv", guess_max=Q10y0_max) %>% 
+  add_column(questionnaire="G0_MotherStress")
+Q10y2 <- read_csv("../normalized_versions/corrected_translated/Q10_norm_MotherStress_Year2_02.09.21.csv", guess_max=Q10y2_max) %>% 
+  add_column(questionnaire="G2_MotherStress")
+
+```
+
+# Goals and objectives: 
+This documents aims to provide an overview on the HELMi contextual dataset extracted from the families questionnaires.
+
+The following aspects are considered: 
+
+- Distributions and outliers 
+
+# Dataset description:
+
+**infants questionnaires:**
+
+- A_background
+ 
+- F1_NutritionMotorDev_year1_version1 or F1_NutritionMotorDev_year1_version2
+ 
+- F2_NutritionMotorDev_year2_version1 or F2_NutritionMotorDev_year2_version2
+
+**infants frequency questionnaires:**
+
+- E_Previous3Months
+ 
+- C_4to6months
+ 
+- D_7to12months
+ 
+- B_0to3months
+
+**parents questionnaires:**
+
+- G_ParentF_FoodFrequency
+ 
+- G_ParentM_FoodFrequency
+ 
+- G_MotherDepression
+ 
+- G0_MotherStress and G2_MotherStress
+
+**Other questionnaires:**
+
+- H_HouseCollection
+
+\pagebreak 
+
+# A_background
+
+## Boolean fields
+
+```{r, echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="A_background")
+
+# Looking at boolean fields
+bool_fields <- curr_Voc %>% filter(data_type=="bool") %>% pull(variable_short_name)
+curr_bool <- Q1 %>% select(familly_ID, all_of(bool_fields))
+curr_bool_long <- curr_bool %>% pivot_longer(!familly_ID, names_to="question", values_to="answers")
+curr_bool_counts <- curr_bool_long %>% group_by(question, answers) %>% tally()
+
+plotbools <- curr_bool_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotbools
+
+```
+
+## Categorical fields
+
+***Note: The field "m_PregnancyDurationW+D" is not plotted here, the converted field is available in the nummerical fields.***
+
+
+```{r,  echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="A_background")
+
+# Looking at categorical fields
+cat_fields <- curr_Voc %>% filter(data_type=="categorical") %>% filter(variable_short_name!="m_PregnancyDurationW+D") %>%
+  pull(variable_short_name)
+curr_cat <- Q1 %>% select(familly_ID, all_of(cat_fields)) %>% mutate_all(as.character)
+curr_cat_long <- curr_cat %>% pivot_longer(!familly_ID, names_to="question", values_to="answers") 
+curr_cat_counts <- curr_cat_long %>% group_by(question, answers) %>% tally() 
+
+
+# categories from 1 to 10
+plotcat <- curr_cat_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotcat
+
+
+```
+## Numerical fields
+
+```{r,  warning=FALSE, echo=FALSE, message=FALSE, fig.height=10}
+curr_Voc <- Voc %>% filter(Questionnaire=="A_background")
+
+# Looking at int fields
+int_fields <- curr_Voc %>% filter(data_type=="int") %>% 
+  filter(variable_short_name != "inf_AgeDays") %>%
+  filter(variable_short_name != "inf_AgeWeeks") %>%
+  filter(variable_short_name != "env_PostalCode") %>%
+  filter(variable_short_name != "env_PrevResidencePostalCode") %>%
+  filter(usability!="EMPTY") %>%
+  pull(variable_short_name)
+
+curr_int <- Q1 %>% select(all_of(int_fields))
+
+ggplot(gather(curr_int), aes(value)) + 
+    geom_histogram() + 
+    facet_wrap(~key, scales = 'free', ncol = 4)
+
+# checking type of data
+type_check <-  curr_int %>% 
+    dplyr::summarise_all(class) %>% 
+    tidyr::gather(variable, class)
+
+
+```
+
+\pagebreak 
+
+# F1_NutritionMotorDev_year1_version1
+
+## Boolean fields
+
+```{r, echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version1")
+
+# Looking at boolean fields
+bool_fields <- curr_Voc %>% filter(data_type=="bool") %>% pull(variable_short_name)
+curr_bool <- Q5y1B %>% select(familly_ID, all_of(bool_fields))
+curr_bool_long <- curr_bool %>% pivot_longer(!familly_ID, names_to="question", values_to="answers")
+curr_bool_counts <- curr_bool_long %>% group_by(question, answers) %>% tally()
+
+plotbools <- curr_bool_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotbools
+
+```
+
+## Categorical fields
+
+*** Note: inf_PeriodFormula is not ploted here. The field needs to be corrected into a start and an end for the period***
+
+```{r,  echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version1")
+
+# Looking at boolean fields
+cat_fields <- curr_Voc %>% filter(data_type=="categorical") %>% filter(variable_short_name!="inf_PeriodFormula") %>%
+  pull(variable_short_name)
+curr_cat <- Q5y1B %>% select(familly_ID, all_of(cat_fields)) %>% mutate_all(as.character)
+curr_cat_long <- curr_cat %>% pivot_longer(!familly_ID, names_to="question", values_to="answers") 
+curr_cat_counts <- curr_cat_long %>% group_by(question, answers) %>% tally() 
+
+
+# categories from 1 to 10
+plotcat <- curr_cat_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotcat
+
+
+```
+## Numerical fields
+
+```{r,  warning=FALSE, echo=FALSE, message=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version1")
+
+# Looking at int fields
+int_fields <- curr_Voc %>% filter(data_type=="int") %>% 
+  filter(variable_short_name != "inf_Age") %>%
+  filter(variable_short_name != "inf_AgeDays") %>%
+  filter(variable_short_name != "inf_AgeWeeks") %>%
+  filter(usability!="EMPTY") %>%
+  pull(variable_short_name)
+
+curr_int <- Q5y1B %>% select(all_of(int_fields)) %>% 
+  mutate_if(is.character,as.numeric)
+
+
+ggplot(gather(curr_int), aes(value)) + 
+    geom_histogram() + 
+    facet_wrap(~key, scales = 'free')
+
+# checking type of data
+type_check <-  curr_int %>% 
+    dplyr::summarise_all(class) %>% 
+    tidyr::gather(variable, class)
+
+
+```
+
+
+\pagebreak 
+
+############################################################################################################
+
+# F2_NutritionMotorDev_year2_version1 
+
+## Boolean fields
+
+*** Empty boolean fields in this questionnaire***
+```{r, echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F2_NutritionMotorDev_yearII_Version1")
+
+# Looking at boolean fields
+bool_fields <- curr_Voc %>% filter(data_type=="bool") %>% pull(variable_short_name)
+curr_bool <- Q5y2B %>% select(familly_ID, all_of(bool_fields))
+curr_bool_long <- curr_bool %>% pivot_longer(!familly_ID, names_to="question", values_to="answers")
+curr_bool_counts <- curr_bool_long %>% group_by(question, answers) %>% tally()
+
+```
+
+## Categorical fields
+
+
+```{r,  echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F2_NutritionMotorDev_yearII_Version1")
+
+# Looking at boolean fields
+cat_fields <- curr_Voc %>% filter(data_type=="categorical") %>%
+  pull(variable_short_name)
+curr_cat <- Q5y2B %>% select(familly_ID, all_of(cat_fields)) %>% mutate_all(as.character)
+curr_cat_long <- curr_cat %>% pivot_longer(!familly_ID, names_to="question", values_to="answers") 
+curr_cat_counts <- curr_cat_long %>% group_by(question, answers) %>% tally() 
+
+
+# categories from 1 to 10
+plotcat <- curr_cat_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotcat
+
+
+```
+## Numerical fields
+
+```{r,  warning=FALSE, echo=FALSE, message=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F2_NutritionMotorDev_yearII_Version1")
+
+# Looking at int fields
+int_fields <- curr_Voc %>% filter(data_type=="int") %>% 
+  filter(variable_short_name != "inf_Age") %>%
+  filter(variable_short_name != "inf_AgeDays") %>%
+  filter(variable_short_name != "inf_AgeWeeks") %>%
+  filter(usability!="EMPTY") %>%
+  pull(variable_short_name)
+
+curr_int <- Q5y2B %>% select(all_of(int_fields)) %>% 
+  mutate_if(is.character,as.numeric)
+
+
+ggplot(gather(curr_int), aes(value)) + 
+    geom_histogram() + 
+    facet_wrap(~key, scales = 'free')
+
+# checking type of data
+type_check <-  curr_int %>% 
+    dplyr::summarise_all(class) %>% 
+    tidyr::gather(variable, class)
+
+
+```
+
+\pagebreak 
+
+# F1_NutritionMotorDev_year1_version2 
+
+## Boolean fields
+
+*** Empty boolean fields in this questionnaire***
+```{r, echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version2")
+
+# Looking at boolean fields
+bool_fields <- curr_Voc %>% filter(data_type=="bool") %>% pull(variable_short_name)
+curr_bool <- Q5y1 %>% select(familly_ID, all_of(bool_fields))
+curr_bool_long <- curr_bool %>% pivot_longer(!familly_ID, names_to="question", values_to="answers")
+curr_bool_counts <- curr_bool_long %>% group_by(question, answers) %>% tally()
+
+plotbools <- curr_bool_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotbools
+
+```
+
+## Categorical fields
+
+*** Note inf_PeriodFormula not plotted here ***
+```{r,  echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version2")
+
+# Looking at boolean fields
+cat_fields <- curr_Voc %>% filter(data_type=="categorical") %>% filter(variable_short_name!="inf_PeriodFormula") %>%
+  pull(variable_short_name)
+curr_cat <- Q5y1 %>% select(familly_ID, all_of(cat_fields)) %>% mutate_all(as.character)
+curr_cat_long <- curr_cat %>% pivot_longer(!familly_ID, names_to="question", values_to="answers") 
+curr_cat_counts <- curr_cat_long %>% group_by(question, answers) %>% tally() 
+
+
+# categories from 1 to 10
+plotcat <- curr_cat_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotcat
+
+
+```
+## Numerical fields
+
+```{r,  warning=FALSE, echo=FALSE, message=FALSE, fig.height=25}
+curr_Voc <- Voc %>% filter(Questionnaire=="F1_NutritionMotorDev_yearI_Version2")
+
+# Looking at int fields
+int_fields <- curr_Voc %>% filter(data_type=="int") %>% 
+  filter(variable_short_name != "inf_Age") %>%
+  filter(variable_short_name != "inf_AgeDays") %>%
+  filter(variable_short_name != "inf_AgeWeeks") %>%
+  filter(usability!="EMPTY") %>%
+  pull(variable_short_name)
+
+curr_int <- Q5y1 %>% select(all_of(int_fields)) %>% 
+  mutate_if(is.character,as.numeric)
+
+
+ggplot(gather(curr_int), aes(value)) + 
+    geom_histogram() + 
+    facet_wrap(~key, scales = 'free', ncol = 6)
+
+# checking type of data
+type_check <-  curr_int %>% 
+    dplyr::summarise_all(class) %>% 
+    tidyr::gather(variable, class)
+
+
+```
+\pagebreak 
+
+# F2_NutritionMotorDev_year2_version2 
+
+## Boolean fields
+
+*** Empty boolean fields in this questionnaire***
+
+## Categorical fields
+
+*** Note inf_PeriodFormula not plotted here ***
+```{r,  echo=FALSE}
+curr_Voc <- Voc %>% filter(Questionnaire=="F2_NutritionMotorDev_yearII_Version2")
+
+# Looking at boolean fields
+cat_fields <- curr_Voc %>% filter(data_type=="categorical") %>%
+  pull(variable_short_name)
+curr_cat <- Q5y2 %>% select(familly_ID, all_of(cat_fields)) %>% mutate_all(as.character)
+curr_cat_long <- curr_cat %>% pivot_longer(!familly_ID, names_to="question", values_to="answers") 
+curr_cat_counts <- curr_cat_long %>% group_by(question, answers) %>% tally() 
+
+
+# categories from 1 to 10
+plotcat <- curr_cat_counts %>% ggplot(aes(x=question, y=n, fill=answers)) +
+  geom_bar(stat="identity")+
+  coord_flip() +
+  theme(legend.position="bottom",
+        text = element_text(size=10))
+
+plotcat
+
+
+```
+## Numerical fields
+
+```{r,  warning=FALSE, echo=FALSE, message=FALSE, fig.height=25}
+curr_Voc <- Voc %>% filter(Questionnaire=="F2_NutritionMotorDev_yearII_Version2")
+
+# Looking at int fields
+int_fields <- curr_Voc %>% filter(data_type=="int") %>% 
+  filter(variable_short_name != "inf_Age") %>%
+  filter(variable_short_name != "inf_AgeDays") %>%
+  filter(variable_short_name != "inf_AgeWeeks") %>%
+  filter(usability!="EMPTY") %>%
+  pull(variable_short_name)
+
+curr_int <- Q5y2 %>% select(all_of(int_fields)) %>% 
+  mutate_if(is.character,as.numeric)
+
+
+ggplot(gather(curr_int), aes(value)) + 
+    geom_histogram() + 
+    facet_wrap(~key, scales = 'free', ncol = 6)
+
+# checking type of data
+type_check <-  curr_int %>% 
+    dplyr::summarise_all(class) %>% 
+    tidyr::gather(variable, class)
+
+
+```
+
+\pagebreak 
+

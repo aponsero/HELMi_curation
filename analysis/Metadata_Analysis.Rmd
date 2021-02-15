@@ -1,10 +1,10 @@
 ---
 title: "HELMi metaData overview"
 output:
-  pdf_document: default
-  html_notebook: default
   html_document:
     df_print: paged
+  html_notebook: default
+  pdf_document: default
 ---
 
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
@@ -15,39 +15,61 @@ library("ggridges")
 
 # Load the spreadsheets
 Voc <- read_excel("../questionnaire_vocabulary.xlsx")
-Q1 <- read_csv("../normalized_versions/corrected_translated/Q1_norm_background_04.10.18.csv") %>% 
+
+Q1_max<-1055
+Q1 <- read_csv("../normalized_versions/corrected_translated/Q1_norm_background_04.10.18.csv", guess_max=Q1_max) %>% 
   add_column(questionnaire="A_background")
 
-Q2 <- read_csv("../normalized_versions/corrected_translated/Q2_norm_Previous3months_15.08.20.csv") %>% 
+Q2_max<-7242
+Q2 <- read_csv("../normalized_versions/corrected_translated/Q2_norm_Previous3months_15.08.20.csv", guess_max=Q2_max) %>% 
   add_column(questionnaire="E_Previous3Months")
 
-Q3 <- read_csv("../normalized_versions/corrected_translated/Q3_norm_4to6months_26.01.20.csv") %>% 
+Q3_max<-6653
+Q3 <- read_csv("../normalized_versions/corrected_translated/Q3_norm_4to6months_26.01.20.csv", guess_max=Q3_max) %>% 
   add_column(questionnaire="C_4to6months")
 
-Q4 <- read_csv("../normalized_versions/corrected_translated/Q4_norm_7to12months_27.01.21.csv") %>% 
+Q4_max<-5600
+Q4 <- read_csv("../normalized_versions/corrected_translated/Q4_norm_7to12months_27.01.21.csv", guess_max=Q4_max) %>% 
   add_column(questionnaire="D_7to12months")
 
-Q5y1 <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_v2_yearI_28.01.21.csv") %>% 
+Q5y1_max<-431
+Q5y2_max<-901
+Q5y1B_max<-532
+Q5y2B_max<-6
+Q5y1 <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_v2_yearI_28.01.21.csv", guess_max=Q5y1_max) %>% 
   add_column(questionnaire="F1_NutritionMotorDev_year1_Version2")
-Q5y2 <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_v2_yearII_28.01.21.csv") %>% 
+Q5y2 <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_v2_yearII_28.01.21.csv", guess_max=Q5y2_max) %>% 
   add_column(questionnaire="F2_NutritionMotorDev_year2_Version2")
-Q5y1B <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_yearI_27.01.21.csv") %>%
+Q5y1B <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_yearI_27.01.21.csv", guess_max=Q5y1B_max) %>%
   add_column(questionnaire="F1_NutritionMotorDev_year1_Version1")
-Q5y2B <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_yearII_28.01.21.csv") %>% 
+Q5y2B <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_yearII_28.01.21.csv", guess_max=Q5y2B_max) %>% 
   add_column(questionnaire="F2_NutritionMotorDev_year2_Version1")
 
-Q6F <- read_csv("../normalized_versions/corrected_translated/Q6_norm_ParentsF_FoodFrequency_28.01.21.csv") %>% 
+Q6F_max<-1018
+Q6M_max<-1357
+Q6F <- read_csv("../normalized_versions/corrected_translated/Q6_norm_ParentsF_FoodFrequency_28.01.21.csv", guess_max=Q6F_max) %>% 
   add_column(questionnaire="G_ParentF_FoodFrequency")
-Q6M <- read_csv("../normalized_versions/corrected_translated/Q6_norm_ParentsM_FoodFrequency_28.01.21.csv") %>% 
+Q6M <- read_csv("../normalized_versions/corrected_translated/Q6_norm_ParentsM_FoodFrequency_28.01.21.csv", guess_max=Q6M_max) %>% 
   add_column(questionnaire="G_ParentM_FoodFrequency")
-Q7 <- read_csv("../normalized_versions/corrected_translated/Q7_norm_depression_unkown.csv") %>% 
+
+Q7_max<-683
+Q7 <- read_csv("../normalized_versions/corrected_translated/Q7_norm_depression_unkown.csv", guess_max=Q7_max) %>% 
   add_column(questionnaire="G_MotherDepression")
 
-Q8 <- read_csv("../normalized_versions/corrected_translated/Q8_norm_HouseDustCollection_28.01.21.csv") %>% 
+Q8_max<-268
+Q8 <- read_csv("../normalized_versions/corrected_translated/Q8_norm_HouseDustCollection_28.01.21.csv", guess_max=Q8_max) %>% 
   add_column(questionnaire="H_HouseCollection")
 
-Q9 <- read_csv("../normalized_versions/corrected_translated/Q9_norm_0to3 months_02.02.2020.csv") %>% 
+Q9_max<-16953
+Q9 <- read_csv("../normalized_versions/corrected_translated/Q9_norm_0to3 months_02.02.2020.csv", guess_max=Q9_max) %>% 
   add_column(questionnaire="B_0to3months")
+
+Q10y0_max<-1076
+Q10y2_max<-689
+Q10y0 <- read_csv("../normalized_versions/corrected_translated/Q10_norm_MotherStress_Year0_02.09.21.csv", guess_max=Q10y0_max) %>% 
+  add_column(questionnaire="G0_MotherStress")
+Q10y2 <- read_csv("../normalized_versions/corrected_translated/Q10_norm_MotherStress_Year2_02.09.21.csv", guess_max=Q10y2_max) %>% 
+  add_column(questionnaire="G2_MotherStress")
 
 ```
 
@@ -89,7 +111,7 @@ The following aspects are considered:
  
 - G_MotherDepression
  
-- G_MotherStress (in progress)
+- G0_MotherStress and G2_MotherStress
 
 **Other questionnaires:**
 
@@ -219,6 +241,18 @@ naC_Q9 <- na_Q9 %>% mutate(percent_na=nb_na/nrow(Q9)) %>%
   add_column(questionnaire="0to3months") %>% select(questionnaire, percent_na)
 all_nac <- bind_rows(all_nac, naC_Q9)
 
+na_Q10y0 <-sapply(Q10y0, function(y) sum(length(which(is.na(y)))))
+na_Q10y0 <- data.frame(na_Q10y0) %>% rename("nb_na"="na_Q10y0")
+na_Q10y0 <- na_Q10y0 %>% mutate(percent_na=nb_na/nrow(Q10y0)) %>% 
+  add_column(questionnaire="G0_MotherStress") %>% select(questionnaire, percent_na)
+all_nac <- bind_rows(all_nac, na_Q10y0)
+
+na_Q10y2 <-sapply(Q10y2, function(y) sum(length(which(is.na(y)))))
+na_Q10y2 <- data.frame(na_Q10y2) %>% rename("nb_na"="na_Q10y2")
+na_Q10y2 <- na_Q10y2 %>% mutate(percent_na=nb_na/nrow(Q10y2)) %>% 
+  add_column(questionnaire="G2_MotherStress") %>% select(questionnaire, percent_na)
+all_nac <- bind_rows(all_nac, na_Q10y2)
+
 # Boxplot Na percentages
 all_nac$questionnaire <- as.factor(all_nac$questionnaire)
 
@@ -258,6 +292,8 @@ Q6M_fam <- Q6M %>% group_by(questionnaire, familly_ID) %>% tally() %>% ungroup()
 Q7_fam <- Q7 %>% group_by(questionnaire, familly_ID) %>% tally() %>% ungroup()
 Q8_fam <- Q8 %>% group_by(questionnaire, familly_ID) %>% tally() %>% ungroup()
 Q9_fam <- Q9 %>% group_by(questionnaire, familly_ID) %>% tally() %>% ungroup()
+Q10y0_fam <- Q10y0 %>% group_by(questionnaire, familly_ID) %>% tally() %>% ungroup()
+Q10y2_fam <- Q10y2 %>% group_by(questionnaire, familly_ID) %>% tally() %>% ungroup()
 
 all_fam <- Q1_fam %>% add_row(Q2_fam) %>% 
   add_row(Q3_fam) %>% 
@@ -270,7 +306,10 @@ all_fam <- Q1_fam %>% add_row(Q2_fam) %>%
   add_row(Q6M_fam) %>% 
   add_row(Q7_fam) %>% 
   add_row(Q8_fam) %>% 
-  add_row(Q9_fam) %>% rename("nb_filled"="n")
+  add_row(Q9_fam) %>%
+  add_row(Q10y0_fam) %>% 
+  add_row(Q10y2_fam) %>% 
+  rename("nb_filled"="n")
 
 nb_fam <- all_fam %>% select(questionnaire, familly_ID) %>% unique() %>% 
   group_by(questionnaire) %>% tally() %>% ungroup() %>% rename("nb of famillies"="n")
@@ -304,23 +343,22 @@ overview per familly: Famillies answering all the regular questionnaires
 
 all_fam_wide <- all_fam %>% pivot_wider(names_from=questionnaire, values_from=nb_filled) %>% replace(is.na(.), 0) %>%
   mutate(F1_NutritionMotorDev_year1=F1_NutritionMotorDev_year1_Version2+F1_NutritionMotorDev_year1_Version1)%>%
-  mutate(F1_NutritionMotorDev_year2=F2_NutritionMotorDev_year2_Version2+F2_NutritionMotorDev_year2_Version1) %>%
+  mutate(F2_NutritionMotorDev_year2=F2_NutritionMotorDev_year2_Version2+F2_NutritionMotorDev_year2_Version1) %>%
   select(-F1_NutritionMotorDev_year1_Version2, -F1_NutritionMotorDev_year1_Version1, - F2_NutritionMotorDev_year2_Version2, - F2_NutritionMotorDev_year2_Version1)
 
 #infants questionnaires (background, Nutrition/Motor year 1 and 2)
-all_fam_wide <- all_fam_wide %>% mutate(all_inf=A_background+F1_NutritionMotorDev_year1+F1_NutritionMotorDev_year2)
+all_fam_wide <- all_fam_wide %>% mutate(all_inf=A_background+F1_NutritionMotorDev_year1+F2_NutritionMotorDev_year2)
 
 #infants frequency questionnaires: (E_Previous3Months, C_4to6months, D_7to12months, B_0to3months)
 all_fam_wide <- all_fam_wide %>% mutate(all_reg=E_Previous3Months+C_4to6months+
                                           D_7to12months+B_0to3months)
 
-#parents questionnaires: (G_ParentF_FoodFrequency, G_ParentM_FoodFrequency, G_MotherDepression, G_MotherStress (in progress))
+#parents questionnaires: (G_ParentF_FoodFrequency, G_ParentM_FoodFrequency, G_MotherDepression, G_MotherStress)
 all_fam_wide <- all_fam_wide %>% mutate(all_parents=G_ParentF_FoodFrequency+G_ParentM_FoodFrequency+
-                                          G_MotherDepression)
+                                          G_MotherDepression + G0_MotherStress + G2_MotherStress)
 
 # all main questionnaires
 all_fam_wide <- all_fam_wide %>% mutate(all_main=all_inf+all_reg+all_parents)
-write.csv(all_fam_wide, "../normalized_versions/corrected_translated/per_familly_questionnaires.csv")
 
 ## output table
 max_inf <- all_fam_wide %>% filter(all_inf==3) %>% tally() %>%
@@ -329,7 +367,7 @@ max_reg <- all_fam_wide %>% filter(all_reg==38) %>% tally()%>%
   rename("all infants frequency"="n")
 max_parents <- all_fam_wide %>% filter(all_parents==5) %>% tally()%>%
   rename("all parents"="n")
-max_all <- all_fam_wide %>% filter(all_main==46) %>% tally()%>%
+max_all <- all_fam_wide %>% filter(all_main==48) %>% tally()%>%
   rename("all major questionnaires"="n")
 max_infreg <- all_fam_wide %>% filter(all_reg==38 & all_inf==3) %>% tally()%>%
   rename("all major infants and frequency"="n")
