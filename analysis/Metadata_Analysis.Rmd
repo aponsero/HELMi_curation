@@ -386,9 +386,96 @@ knitr::kable(table_out)
 
 ```
 
+## Family answer levels in questionnaires
+
+overview per questionnaire: Distribution of the nb of NAs per rows
+
+```{r, echo=FALSE}
+
+Q1_distNA <- Q1 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q2_distNA <- Q2 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q3_distNA <- Q3 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q4_distNA <- Q4 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q5y1_distNA <- Q5y1 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q5y2_distNA <- Q5y2 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q5y1B_distNA <- Q5y1B %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q5y2B_distNA <- Q5y2B %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q6F_distNA <- Q6F %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q6M_distNA <- Q6M %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q7_distNA <- Q7 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q8_distNA <- Q8 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q9_distNA <- Q9 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q10y0_distNA <- Q10y0 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+Q10y2_distNA <- Q10y2 %>% 
+  mutate(non_NA= rowSums(!is.na(select(., -familly_ID)))) %>% 
+  select(familly_ID, non_NA, questionnaire)
+
+all_distNA<- Q1_distNA %>% add_row(Q2_distNA) %>% 
+  add_row(Q3_distNA) %>% 
+  add_row(Q4_distNA) %>% 
+  add_row(Q5y1_distNA) %>% 
+  add_row(Q5y2_distNA) %>% 
+  add_row(Q5y1B_distNA) %>% 
+  add_row(Q5y2B_distNA) %>% 
+  add_row(Q6M_distNA) %>% 
+  add_row(Q6F_distNA) %>%
+  add_row(Q7_distNA) %>% 
+  add_row(Q8_distNA) %>% 
+  add_row(Q9_distNA) %>% 
+  add_row(Q10y0_distNA) %>% 
+  add_row(Q10y2_distNA)
+  
+
+ggplot(all_distNA, aes(non_NA)) + 
+    geom_histogram() + 
+    facet_wrap(~questionnaire, scales = 'free', ncol = 4)
 
 
 
+
+```
 
 
 

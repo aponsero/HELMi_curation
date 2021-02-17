@@ -1,6 +1,7 @@
 library(shiny)
 library(tidyverse)
-library("readxl")
+library(readxl)
+library(xlsx)
 
 # Load the data cube
 # ----------------------------------
@@ -15,30 +16,14 @@ question_long <- question_wide %>%
   filter(nb_responses!=0)
 
 
+baby <- read_csv("../normalized_versions/DataCube/baby.csv") 
+
+mother <- read_csv("../normalized_versions/DataCube/mother.csv") 
 
 # Load the original spreadsheets
 # ----------------------------------
 
 Q1 <- read_csv("../normalized_versions/corrected_translated/Q1_norm_background_04.10.18.csv") 
-
-Q2 <- read_csv("../normalized_versions/corrected_translated/Q2_norm_Previous3months_15.08.20.csv")
-
-Q3 <- read_csv("../normalized_versions/corrected_translated/Q3_norm_4to6months_26.01.20.csv")
-
-Q4 <- read_csv("../normalized_versions/corrected_translated/Q4_norm_7to12months_27.01.21.csv")
-
-Q5y1 <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_v2_yearI_28.01.21.csv") 
-Q5y2 <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_v2_yearII_28.01.21.csv")
-Q5y1B <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_yearI_27.01.21.csv")
-Q5y2B <- read_csv("../normalized_versions/corrected_translated/Q5_norm_NutritionMotorDev_yearII_28.01.21.csv")
-
-Q6F <- read_csv("../normalized_versions/corrected_translated/Q6_norm_ParentsF_FoodFrequency_28.01.21.csv")
-Q6M <- read_csv("../normalized_versions/corrected_translated/Q6_norm_ParentsM_FoodFrequency_28.01.21.csv")
-Q7 <- read_csv("../normalized_versions/corrected_translated/Q7_norm_depression_unkown.csv")
-
-Q8 <- read_csv("../normalized_versions/corrected_translated/Q8_norm_HouseDustCollection_28.01.21.csv")
-
-Q9 <- read_csv("../normalized_versions/corrected_translated/Q9_norm_0to3 months_02.02.2020.csv")
 
 # ----------------------------------
 
@@ -46,24 +31,37 @@ Q9 <- read_csv("../normalized_versions/corrected_translated/Q9_norm_0to3 months_
 
 # UI
 ui <- fluidPage( 
+  #header section
   # ----------------------------------
   h1("HELMi contextual dataset", align = "center"),
   HTML('<br/>'),
-  p("Explore and download the questionnaire datasets from the HELMi cohort"),
+  h3("Explore and download the questionnaire datasets from the HELMi cohort", align = "center"),
   HTML('<center><img src="microbes.jpg" width="100%"></center>'),
   HTML('<br/>'),
   # ----------------------------------
+  # questionnaire inputs
+  # ----------------------------------
   wellPanel(fluidRow(
-    h2("Questionnaire answered", align = "center"),
+    h2("Questionnaires answered", align = "center"),
     HTML('<br/>'),
-    # questionnaire inputs
-    # ----------------------------------
-    column(3,
+    column(2,
            checkboxGroupInput("quest1", "Unique questionnaires:",
                                c("Background"="A_background",
-                                 "MotorNutrition year 1"="F1_NutritionMotorDev_year1",
-                                 "MotorNutrition year 2"="F2_NutritionMotorDev_year2"),
+                                 "Mother Depression"= "G_MotherDepression", 
+                                 "Mother stress Q4" = "G0_MotherStress",
+                                 "Mother stress year 2"= "G2_MotherStress"),
                                selected="A_background")),
+    column(2,
+           checkboxGroupInput("quest2", "Food questionnaires:",
+                              c("MotorNutrition year 1"="F1_NutritionMotorDev_year1",
+                                "MotorNutrition year 2"="F2_NutritionMotorDev_year2")),
+           HTML('<br/>'),
+           sliderInput("G_ParentM_FoodFrequency", "Mother Nutrition",
+                      min = 0, max = 2,
+                      value = c(0,2)),
+           sliderInput("G_ParentF_FoodFrequency", "Partner Nutrition",
+                        min = 0, max = 2,
+                        value = c(0,2))),
     column(3,
            sliderInput("B_0to3months", "0 to 3months:",
                               min = 0, max = 17,
@@ -78,17 +76,65 @@ ui <- fluidPage(
            sliderInput("E_Previous3Months", "Previous 3months:",
                        min = 0, max = 8,
                        value = c(0,8))),
-    column(1,
-           downloadButton("downloadData", "Download selection")
+    column(2,
+           downloadButton("downloadData", "familyIDs"),
+           h3(""),
+           downloadButton("downloadQuest", "Background"),
+           h3(""),
+           downloadButton("downloadSample", "Samples"),
            ))),
-  # ----------------------------------
-  fluidRow(
-           column(5,offset = 1, h3(textOutput("text")),
-                  HTML('<br/>'),
-                  tableOutput("table1")),
-           ), # end main panel
-  # ----------------------------------
-  includeHTML("footer.html"),
+    # ----------------------------------
+    # background searches
+    # ----------------------------------
+    wellPanel(fluidRow(
+      h2("Main informations", align = "center"),
+      HTML('<br/>'),
+      # questionnaire inputs
+    # ----------------------------------
+    column(1),
+    column(2,
+           h4("Baby", align = "center"),
+           checkboxGroupInput("BirthMode", "Birth Mode:",
+                              c("Vaginal"="Vaginal",
+                                "C-Section"="C-section"),
+                              selected="Vaginal"),
+           ),
+    column(2,
+           h4("Mother", align = "center"),
+           checkboxGroupInput("m_HasHeritableDisease", "Has heritable disease:",
+                              c("Yes"="Yes",
+                                "No"="No",
+                                "Unknown"="Unknown"),
+                              selected=c("No", "Unknown")),
+           checkboxGroupInput("m_ProbioticsUse", "Probiotics during pregnancy:",
+                              c("Daily"="Daily",
+                                "Sometimes"="Sometimes",
+                                "Weekly"="Weekly",
+                                "Never"="Never"),
+                              selected="Daily"),
+    ),
+    column(2,
+           h4("Father", align = "center"),
+    ),
+    column(2,
+           h4("Partner", align = "center"),
+    ),
+    column(2,
+           h4("Family", align = "center"),
+    ),
+      
+      
+    )),
+    # ----------------------------------
+    # Display outputs
+    # ----------------------------------
+    fluidRow(
+             column(5,offset = 1, h3(textOutput("text")),
+                    HTML('<br/>'),
+                    tableOutput("table1")),
+             ), # end main panel
+    # ----------------------------------
+    includeHTML("footer.html"),
 ) # end NavPage panel
 
 
@@ -101,14 +147,14 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
+  # Reactive elements Questionnaire search
   # ----------------------------------
-  # Reactive elements search
   
   # getting familly ID from Background questionnaire selection
   ques1_dataset <- reactive({
-    question_long %>% filter(questionnaire %in% input$quest1) %>% 
+    question_long %>% filter(questionnaire %in% c(input$quest1, input$quest2)) %>% 
       group_by(familly_ID) %>% tally() %>% ungroup() %>% rename("nb_reg"="n") %>%
-      filter(nb_reg==length(input$quest1)) %>% select(familly_ID) %>% unique()
+      filter(nb_reg==length(c(input$quest1, input$quest2))) %>% select(familly_ID) %>% unique()
   })
   
   # getting familly ID from Regular questionnaire selection
@@ -117,11 +163,13 @@ server <- function(input, output) {
                       filter(C_4to6months<=input$C_4to6months[2] & C_4to6months>=input$C_4to6months[1]) %>%
                       filter(D_7to12months<=input$D_7to12months[2] & D_7to12months>=input$D_7to12months[1]) %>%
                       filter(E_Previous3Months<=input$E_Previous3Months[2] & E_Previous3Months>=input$E_Previous3Months[1]) %>%
+                      filter(G_ParentM_FoodFrequency<=input$G_ParentM_FoodFrequency[2] & G_ParentM_FoodFrequency>=input$G_ParentM_FoodFrequency[1]) %>%
+                      filter(G_ParentF_FoodFrequency<=input$G_ParentF_FoodFrequency[2] & G_ParentF_FoodFrequency>=input$G_ParentF_FoodFrequency[1]) %>%
                       select(familly_ID)
   })
   
   # get all concerned famillies
-  familly_list <- reactive({
+  Questfamilly_list <- reactive({
     if(nrow(ques1_dataset())==0){
       Reg_dataset()
     }else if(nrow(Reg_dataset())==0){
@@ -129,17 +177,46 @@ server <- function(input, output) {
     }else{
       inner_join(Reg_dataset(), ques1_dataset())
     }
-    
   })
   
   # ----------------------------------
+  # Reactive elements background search
+  baby_dataset <- reactive({
+    baby %>% filter(inf_DeliveryMode %in% c(input$BirthMode)) %>%
+      select(familly_ID) %>% unique()
+  })
+  
+  Babyfamilly_list <- reactive({
+    baby_dataset()
+  })
+  
+  # ----------------------------------
+  # Reactive elements Mother search
+  mother_dataset <- reactive({
+    mother %>% filter(m_HasHeritableDisease %in% c(input$m_HasHeritableDisease)) %>%
+      filter(m_ProbioticsUse %in% c(input$m_ProbioticsUse)) %>%
+      select(familly_ID) %>% unique()
+  })
+  
+  motherfamilly_list <- reactive({
+    mother_dataset()
+  })
+  
+  # ----------------------------------
+  # Output displays
+  # ----------------------------------
+  
+  familly_list <- reactive({
+      temp1 <- inner_join(Questfamilly_list(), Babyfamilly_list())
+      inner_join(temp1, motherfamilly_list())
+  })
+  
   # Table output
   output$table1 <- renderTable({
     inner_join(familly_list(), question_long) %>% group_by(questionnaire) %>% tally() %>%
       filter(!questionnaire %in% c("all_inf", "all_parents", "all_main", "all_reg"))
   })
   
-  # ----------------------------------
   # Text output
   output$text <- renderText({ 
     paste ('nb of famillies selected:', as.character(nrow(familly_list())))})
@@ -148,14 +225,30 @@ server <- function(input, output) {
   
   # ----------------------------------
   # Download button
-
+  perhe_list <- reactive({
+    familly_list() %>% mutate(familly_ID=paste("Perhe", familly_ID, sep=""))
+  })
   
-output$downloadData <- downloadHandler(
+  Q1_sel <- reactive({
+    inner_join(perhe_list(), Q1)
+  })
+  
+  
+  output$downloadData <- downloadHandler(
+      filename = function() {
+        paste("famillyList-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        write.csv(familly_list(), file, row.names = FALSE)
+      }
+    )
+  
+  output$downloadQuest <- downloadHandler(
     filename = function() {
-      paste("Q1_background-", Sys.Date(), ".csv", sep="")
+      paste("background-", Sys.Date(), ".csv", sep="")
     },
     content = function(file) {
-      write.csv(background_dataset(), file)
+      write.csv(Q1_sel(), file, row.names = FALSE)
     }
   )
 
